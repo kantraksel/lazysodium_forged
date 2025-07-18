@@ -7,7 +7,7 @@
  */
 package pl.kantraksel.lazysodium_forged.utils;
 
-import com.goterl.resourceloader.SharedLibraryLoader;
+import pl.kantraksel.lazysodium_forged.resourceloader.SharedLibraryLoader;
 import pl.kantraksel.lazysodium_forged.Sodium;
 import pl.kantraksel.lazysodium_forged.SodiumJava;
 import com.sun.jna.Native;
