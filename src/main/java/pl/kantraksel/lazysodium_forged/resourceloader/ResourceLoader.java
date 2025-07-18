@@ -9,9 +9,10 @@
 package pl.kantraksel.lazysodium_forged.resourceloader;
 
 
+import com.mojang.logging.LogUtils;
 import com.sun.jna.Platform;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import pl.kantraksel.lazysodium_forged.LazySodiumMod;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -33,7 +34,7 @@ import java.util.zip.ZipInputStream;
  */
 public class ResourceLoader {
 
-    private final Logger logger = LoggerFactory.getLogger("ResourceLoader");
+    private final Logger logger = LogUtils.getLogger();
 
     private final Collection<PosixFilePermission> writePerms = new ArrayList<>();
     private final Collection<PosixFilePermission> readPerms = new ArrayList<>();
@@ -70,22 +71,20 @@ public class ResourceLoader {
         // Create the required directories.
         mainTempDir.mkdirs();
 
-        // Is the user loading resources that are
-        // from inside a JAR?
-        URL fullJarPathURL = getThePathToTheJarWeAreIn(outsideClass);
+        relativePath = prefixStringWithSlashIfNotAlready(relativePath);
 
-        // Test if we are in a JAR and if we are
-        // then do the following...
-        if (isJarFile(fullJarPathURL)) {
-            File extracted = extractFromWithinAJarFile(fullJarPathURL, mainTempDir, relativePath);
-            if (extracted != null) {
-                return extracted;
+        String resourceName = Paths.get(relativePath).getFileName().toString();
+        File targetFile = new File(mainTempDir, resourceName);
+
+        try (InputStream in = ResourceLoader.class.getResourceAsStream(relativePath)) {
+            if (in == null)
+                throw new IOException(String.format("Cannot find resource %s", relativePath));
+
+            try (FileOutputStream out = new FileOutputStream(targetFile)) {
+                in.transferTo(out);
+                return targetFile;
             }
         }
-
-        // If not then get the file/directory
-        // straight from the file system
-        return getFileFromFileSystem(relativePath, mainTempDir);
     }
 
     public File extractFromWithinAJarFile(URL jarPath, File mainTempDir, String relativePath)
@@ -400,7 +399,7 @@ public class ResourceLoader {
      * @throws IOException Could not create a temporary directory
      */
     public static File createMainTempDirectory() throws IOException {
-        Path path = Files.createTempDirectory("resource-loader");
+        Path path = Files.createTempDirectory(LazySodiumMod.MODID);
         File dir = path.toFile();
         dir.mkdir();
         dir.deleteOnExit();

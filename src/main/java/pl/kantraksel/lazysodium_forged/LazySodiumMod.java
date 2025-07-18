@@ -23,7 +23,11 @@ public class LazySodiumMod
     private void commonSetup(final FMLCommonSetupEvent event)
     {
         LOGGER.info("Loading LazySodium mod");
-        new SodiumJava(LibraryLoader.Mode.PREFER_BUNDLED);
+        try {
+            new SodiumJava(LibraryLoader.Mode.PREFER_BUNDLED);
+        } catch (Throwable e) {
+            throw new RuntimeException("Failed to load LazySodium library", e);
+        }
         LOGGER.info("Loaded LazySodium mod");
     }
 }

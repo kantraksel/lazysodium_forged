@@ -7,13 +7,13 @@
  */
 package pl.kantraksel.lazysodium_forged.utils;
 
+import com.mojang.logging.LogUtils;
 import pl.kantraksel.lazysodium_forged.resourceloader.SharedLibraryLoader;
 import pl.kantraksel.lazysodium_forged.Sodium;
 import pl.kantraksel.lazysodium_forged.SodiumJava;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,8 @@ import java.util.List;
  */
 public final class LibraryLoader {
 
-    private final Logger logger = LoggerFactory.getLogger(Constants.LAZYSODIUM_JAVA);
+    private final Logger logger = LogUtils.getLogger();
+    private boolean libraryLoaded = false;
 
     /**
      * Library loading mode controls which libraries are attempted to be loaded (installed in the system or bundled
@@ -85,12 +86,14 @@ public final class LibraryLoader {
      * @see Native#register(Class, String)
      */
     public void loadLibrary(Mode mode, String systemFallBack) {
+        if (libraryLoaded)
+            return;
         switch (mode) {
             case PREFER_SYSTEM:
                 try {
                     loadSystemLibrary(systemFallBack);
                 } catch (Throwable suppressed) {
-                    logger.debug("Tried loading native libraries from system but failed. Message: {}.", suppressed.getMessage());
+                    logger.warn("Tried loading native libraries from system but failed. Message: {}.", suppressed.getMessage());
                     // Attempt to load the bundled
                     loadBundledLibrary();
                 }
@@ -99,7 +102,7 @@ public final class LibraryLoader {
                 try {
                     loadBundledLibrary();
                 } catch (Throwable suppressed) {
-                    logger.debug("Tried loading native libraries from the bundled resources but failed. Message: {}.", suppressed.getMessage());
+                    logger.warn("Tried loading native libraries from the bundled resources but failed. Message: {}.", suppressed.getMessage());
                     loadSystemLibrary(systemFallBack);
                 }
                 break;
@@ -116,6 +119,7 @@ public final class LibraryLoader {
 
     public void loadSystemLibrary(String library) {
         SharedLibraryLoader.get().loadSystemLibrary(library, classes);
+        libraryLoaded = true;
     }
 
     public void loadAbsolutePath(String absPath) {
@@ -132,6 +136,7 @@ public final class LibraryLoader {
     private void loadBundledLibrary() {
         String pathInJar = getSodiumPathInResources();
         SharedLibraryLoader.get().load(pathInJar, classes);
+        libraryLoaded = true;
     }
 
     /**

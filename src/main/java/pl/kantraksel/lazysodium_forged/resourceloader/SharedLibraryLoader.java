@@ -8,7 +8,9 @@
 
 package pl.kantraksel.lazysodium_forged.resourceloader;
 
+import com.mojang.logging.LogUtils;
 import com.sun.jna.Native;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +22,7 @@ import static java.util.Objects.requireNonNull;
 
 public class SharedLibraryLoader extends ResourceLoader {
 
+    private final Logger logger = LogUtils.getLogger();
     private final Object lock = new Object();
 
 
@@ -40,6 +43,7 @@ public class SharedLibraryLoader extends ResourceLoader {
     }
 
     public void loadSystemLibrary(String libraryName, List<Class> classes) {
+        logger.debug("Loading system library {}", libraryName);
         registerLibraryWithClasses(libraryName, classes);
     }
 
@@ -51,11 +55,13 @@ public class SharedLibraryLoader extends ResourceLoader {
         synchronized (lock) {
             try {
                 File library = copyToTempDirectory(relativePath, classes.get(0));
+                logger.debug("Unpacked {} to {}", relativePath, library.getAbsolutePath());
                 setPermissions(library);
                 if (library.isDirectory()) {
                     throw new IOException("Please supply a relative path to a file and not a directory.");
                 }
                 registerLibraryWithClasses(library.getAbsolutePath(), classes);
+                logger.debug("Mapped {}", relativePath);
                 requestDeletion(library);
                 return library;
             } catch (IOException e) {
