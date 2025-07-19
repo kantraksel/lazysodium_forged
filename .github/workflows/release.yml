@@ -24,7 +24,7 @@ jobs:
           java-version: 17
       - uses: NuGet/setup-nuget@v2
       - name: Install Mono
-        run: sudo apt install mono-runtime
+        run: sudo apt install mono-devel
 
       - uses: actions/cache@v4
         id: cache
