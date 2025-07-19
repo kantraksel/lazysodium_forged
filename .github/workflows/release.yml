@@ -34,7 +34,7 @@ jobs:
           
       - name: Get libsodium binaries
         if: steps.cache.outputs.cache-hit != 'true'
-        run: nuget install libsodium -Version ${{ env.LIBSODIUM_VERSION }}
+        run: dotnet nuget install libsodium -Version ${{ env.LIBSODIUM_VERSION }}
       - name: Copy binaries to resources
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
