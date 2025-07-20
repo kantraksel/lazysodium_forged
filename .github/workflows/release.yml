@@ -19,26 +19,29 @@ jobs:
         with:
           distribution: microsoft
           java-version: 17
-      - uses: NuGet/setup-nuget@v2
-      - name: Install Mono
-        run: sudo apt install mono-devel
 
       - uses: actions/cache@v4
         id: cache
         with:
           key: libsodium.${{ env.LIBSODIUM_VERSION }}
           path: libsodium.${{ env.LIBSODIUM_VERSION }}
-          
+
+      - uses: NuGet/setup-nuget@v2
+        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install Mono
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: sudo apt install mono-devel
       - name: Get libsodium binaries
         if: steps.cache.outputs.cache-hit != 'true'
         run: nuget install libsodium -Version ${{ env.LIBSODIUM_VERSION }}
+
       - name: Copy binaries to resources
-        if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/linux-x64/native" "src/main/resources/linux64"
-          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/osx-x64/native" "src/main/resources/mac"
-          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/osx-arm64/native" "src/main/resources/mac_arm"
-          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/win-x64/native" "src/main/resources/windows64"
+          cp "libsodium.${{ env.LIBSODIUM_VERSION }}/LICENSE" "src/main/resources/LIBSODIUM.LICENSE"
+          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/linux-x64/native" "src/main/resources/linux-x64"
+          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/osx-x64/native" "src/main/resources/osx-x64"
+          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/osx-arm64/native" "src/main/resources/osx-arm64"
+          cp --recursive "libsodium.${{ env.LIBSODIUM_VERSION }}/runtimes/win-x64/native" "src/main/resources/win-x64"
         
       - name: Gradle Jar
         run: ./gradlew jar

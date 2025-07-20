@@ -147,31 +147,22 @@ public final class LibraryLoader {
         boolean is64Bit = Native.POINTER_SIZE == 8;
         if (Platform.isWindows()) {
             if (is64Bit) {
-                return getPath("windows64", "libsodium.dll");
+                return getPath("win-x64", "libsodium.dll");
             } else {
-                return getPath("windows", "libsodium.dll");
+                return getPath("win-x86", "libsodium.dll");
             }
         }
         if (Platform.isMac()) {
             // check for Apple Silicon
             if (Platform.isARM()) {
-                return getPath("mac_arm", "libsodium.dylib");
+                return getPath("osx-arm64", "libsodium.dylib");
             } else {
-                return getPath("mac", "libsodium.dylib");
-            }
-        }
-        if (Platform.isARM()) {
-            if (is64Bit) {
-                return getPath("arm64", "libsodium.so");
-            } else {
-                return getPath("armv6", "libsodium.so");
+                return getPath("osx-x64", "libsodium.dylib");
             }
         }
         if (Platform.isLinux()) {
             if (is64Bit) {
-                return getPath("linux64", "libsodium.so");
-            } else {
-                return getPath("linux", "libsodium.so");
+                return getPath("linux-x64", "libsodium.so");
             }
         }
 
